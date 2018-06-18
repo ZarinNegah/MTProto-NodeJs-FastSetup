@@ -4,8 +4,7 @@ Fast Setup MTProto Service in CentOS and Ubuntu and Debian OS Server With NodeJs
 ### Site: [FastSetup.MTProtoServer.ir](http://FastSetup.MTProtoServer.ir)
 - - -
 ## CentOS : Copy the Command to Your VPS & Execute It:
-One Line of Command for Installing MTProxy on the Operating System of CentOS with the Promoted Channel
-
+One Line of Command for Installing MTProxy on the Operating System of CentOS with NodeJs ( Promoted Channel is Not Supported )
 ```bash
 yum install wget -y && wget -N --no-check-certificate https://raw.githubusercontent.com/ZarinNegah/MTProto-NodeJs-FastSetup/master/MTProto-NodeJs-FastSetup-CentOS.sh && bash MTProto-NodeJs-FastSetup-CentOS.sh
 ```
