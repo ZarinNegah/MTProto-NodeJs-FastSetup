@@ -105,6 +105,7 @@ head -c 16 /dev/urandom | xxd -ps > /etc/secret
 SECRET=$(cat /etc/secret)
 UPORT=$(cat /etc/proxy-port)
 echo -e "{ \n  'port':${UPORT}, \n  'secret':'${SECRET}' \n}" > config.json
+echo -e '{ \n  "port":'${UPORT}', \n  "secret":"'${SECRET}'" \n}' > config.json
 
 # Setting Up a Firewall
 if [ ! -f "/etc/iptables.up.rules" ]; then 
@@ -136,10 +137,12 @@ fi
 # Set Boot From Start and Start MTProxy
 if [[ ${OS} == CentOS ]];then
 	if [[ $CentOS_RHEL_version == 7 ]];then
+	        cd ~/JSMTProxy
 		pm2 start mtproxy.js -i max
                 pm2 save
                 pm2 startup centos
         if [ $? -eq 0 ]; then
+	        cd ~/JSMTProxy
 	        pm2 start mtproxy.js -i max
                 pm2 save
                 pm2 startup
