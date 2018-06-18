@@ -62,11 +62,16 @@ if [ -f "/etc/secret" ]; then
 fi
 
 # Firewalld
-if [ ${OS} == CentOS ];then
-  yum install firewalld -y
-  systemctl enable firewalld
-  systemctl start firewalld
-  systemctl status firewalld
+if [[ ${OS} == CentOS ]];then
+	if [[ $CentOS_RHEL_version == 7 ]];then
+	        yum install firewalld -y
+                systemctl enable firewalld
+                systemctl start firewalld
+                systemctl status firewalld
+        if [[ $CentOS_RHEL_version == 6 ]];then
+	        yum install firewalld -y
+	fi
+	fi
 fi
 
 # Enter the Proxy Port
@@ -92,7 +97,7 @@ IP=$(curl -4 -s ip.sb)
 if [[ ${OS} == CentOS ]];then
 	if [[ $CentOS_RHEL_version == 7 ]];then
 		git clone https://github.com/FreedomPrevails/JSMTProxy
-        if [ $? -eq 0 ]; then
+        if [[ $CentOS_RHEL_version == 6 ]];then
 	        git clone git://github.com/FreedomPrevails/JSMTProxy
 	fi
 	fi
@@ -141,7 +146,7 @@ if [[ ${OS} == CentOS ]];then
 		pm2 start mtproxy.js -i max
                 pm2 save
                 pm2 startup centos
-        if [ $? -eq 0 ]; then
+        if [[ $CentOS_RHEL_version == 6 ]];then
 	        cd ~/JSMTProxy
 	        pm2 start mtproxy.js -i max
                 pm2 save
