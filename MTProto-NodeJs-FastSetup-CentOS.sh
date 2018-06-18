@@ -103,7 +103,8 @@ cd JSMTProxy
 echo "${uport}" > /etc/proxy-port
 head -c 16 /dev/urandom | xxd -ps > /etc/secret
 SECRET=$(cat /etc/secret)
-sed -i -e 's/6969/${uport}/g' -e 's/b0cbcef5a486d9636472ac27f8e11a9d/${SECRET}/g' config.json
+UPORT=$(cat /etc/proxy-port)
+echo -e "{ \n  'port':${UPORT}, \n  'secret':'${SECRET}' \n}" > config.json
 
 # Setting Up a Firewall
 if [ ! -f "/etc/iptables.up.rules" ]; then 
