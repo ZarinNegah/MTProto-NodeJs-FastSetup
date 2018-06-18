@@ -68,7 +68,7 @@ if [[ ${OS} == CentOS ]];then
                 systemctl enable firewalld
                 systemctl start firewalld
                 systemctl status firewalld
-        else [[ $CentOS_RHEL_version == 6 ]];then
+        elif [[ $CentOS_RHEL_version == 6 ]];then
 	        yum install firewalld -y
 	fi
 fi
@@ -96,7 +96,7 @@ IP=$(curl -4 -s ip.sb)
 if [[ ${OS} == CentOS ]];then
 	if [[ $CentOS_RHEL_version == 7 ]];then
 		git clone https://github.com/FreedomPrevails/JSMTProxy
-        else [[ $CentOS_RHEL_version == 6 ]];then
+        elif [[ $CentOS_RHEL_version == 6 ]];then
 	        git clone git://github.com/FreedomPrevails/JSMTProxy
 	fi
 fi
@@ -144,7 +144,7 @@ if [[ ${OS} == CentOS ]];then
 		pm2 start mtproxy.js -i max
                 pm2 save
                 pm2 startup centos
-        else [[ $CentOS_RHEL_version == 6 ]];then
+        elif [[ $CentOS_RHEL_version == 6 ]];then
 	        cd ~/JSMTProxy
 	        pm2 start mtproxy.js -i max
                 pm2 save
