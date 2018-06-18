@@ -47,7 +47,6 @@ if [ -f "/etc/secret" ]; then
 	IP=$(curl -4 -s ip.sb)
 	SECRET=$(cat /etc/secret)
 	PORT=$(cat /etc/proxy-port)
-	TAG=$(cat /etc/proxy-tag)
 	echo "MTProxy Installed！"
         echo "Server IP： ${IP}"
         echo "Port：      ${PORT}"
