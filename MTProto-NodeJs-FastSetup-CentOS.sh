@@ -62,13 +62,13 @@ if [ -f "/etc/secret" ]; then
 fi
 
 # Firewalld
-if [[ ${OS} == CentOS ]];then
-	if [[ $CentOS_RHEL_version == 7 ]];then
+if [[ ${OS} == CentOS ]]; then
+	if [[ $CentOS_RHEL_version == 7 ]]; then
 	        yum install firewalld -y
                 systemctl enable firewalld
                 systemctl start firewalld
                 systemctl status firewalld
-        elif [[ $CentOS_RHEL_version == 6 ]];then
+        elif [[ $CentOS_RHEL_version == 6 ]]; then
 	        yum install firewalld -y
 	fi
 fi
@@ -79,7 +79,7 @@ if [[ -z "${uport}" ]];then
 	uport="2082"
 fi
 
-if [ ${OS} == CentOS ];then
+if [ ${OS} == CentOS ]; then
   yum update -y
   yum install wget gcc gcc-c++ flex bison make bind bind-libs bind-utils epel-release iptables-services openssl openssl-devel firewalld perl quota libaio libcom_err-devel libcurl-devel tar diffutils nano dbus.x86_64 db4-devel cyrus-sasl-devel perl-ExtUtils-Embed.x86_64 cpan vim-common screen libtool perl-core zlib-devel htop git git-core curl sudo -y
   yum groupinstall "Development Tools" -y
@@ -93,10 +93,10 @@ fi
 IP=$(curl -4 -s ip.sb)
 
 # Download MTProxy project source code
-if [[ ${OS} == CentOS ]];then
-	if [[ $CentOS_RHEL_version == 7 ]];then
+if [[ ${OS} == CentOS ]]; then
+	if [[ $CentOS_RHEL_version == 7 ]]; then
 		git clone https://github.com/FreedomPrevails/JSMTProxy
-        elif [[ $CentOS_RHEL_version == 6 ]];then
+        elif [[ $CentOS_RHEL_version == 6 ]]; then
 	        git clone git://github.com/FreedomPrevails/JSMTProxy
 	fi
 fi
@@ -115,8 +115,8 @@ if [ ! -f "/etc/iptables.up.rules" ]; then
     iptables-save > /etc/iptables.up.rules
 fi
 
-if [[ ${OS} == CentOS ]];then
-	if [[ $CentOS_RHEL_version == 7 ]];then
+if [[ ${OS} == CentOS ]]; then
+	if [[ $CentOS_RHEL_version == 7 ]]; then
 		
         if [ $? -eq 0 ]; then
 	        firewall-cmd --permanent --add-port=${uport}/tcp
@@ -138,13 +138,13 @@ fi
 
 
 # Set Boot From Start and Start MTProxy
-if [[ ${OS} == CentOS ]];then
-	if [[ $CentOS_RHEL_version == 7 ]];then
+if [[ ${OS} == CentOS ]]; then
+	if [[ $CentOS_RHEL_version == 7 ]]; then
 	        cd ~/JSMTProxy
 		pm2 start mtproxy.js -i max
                 pm2 save
                 pm2 startup centos
-        elif [[ $CentOS_RHEL_version == 6 ]];then
+        elif [[ $CentOS_RHEL_version == 6 ]]; then
 	        cd ~/JSMTProxy
 	        pm2 start mtproxy.js -i max
                 pm2 save
