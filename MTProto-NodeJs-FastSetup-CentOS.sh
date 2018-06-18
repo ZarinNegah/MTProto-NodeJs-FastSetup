@@ -34,12 +34,12 @@ plain='\033[0m'
 
 # Print Welcome Message
 clear
-echo "----------------------------------------------------"
-echo "  Install MTProto For Telegram with Promoted Channel"
+echo "---------------------------------------------"
+echo "  Install MTProto For Telegram with NodeJs"
 echo "  Author: ZarinNegah"
 echo "  URL: http://Fastsetup.MTProtoServer.ir/"
 echo "  Telegram: https://t.me/mtp_2018"
-echo "----------------------------------------------------"
+echo "---------------------------------------------"
 echo ""
 
 
@@ -52,7 +52,7 @@ if [ -f "/etc/secret" ]; then
         echo "Server IP： ${IP}"
         echo "Port：      ${PORT}"
         echo "Secret：    ${SECRET}"
-        echo "TAG：       ${TAG}"
+        echo "TAG：       Not Support NodeJs"
         echo ""
         echo -e "TG Proxy link：${green}https://t.me/proxy?server=${IP}&port=${uport}&secret=${SECRET}${plain}"
         echo ""
@@ -77,59 +77,33 @@ fi
 
 if [ ${OS} == CentOS ];then
   yum update -y
-  yum install wget gcc gcc-c++ flex bison make bind bind-libs bind-utils epel-release iptables-services openssl openssl-devel firewalld perl quota libaio libcom_err-devel libcurl-devel tar diffutils nano dbus.x86_64 db4-devel cyrus-sasl-devel perl-ExtUtils-Embed.x86_64 cpan vim-common screen libtool perl-core zlib-devel htop git curl sudo -y
+  yum install wget gcc gcc-c++ flex bison make bind bind-libs bind-utils epel-release iptables-services openssl openssl-devel firewalld perl quota libaio libcom_err-devel libcurl-devel tar diffutils nano dbus.x86_64 db4-devel cyrus-sasl-devel perl-ExtUtils-Embed.x86_64 cpan vim-common screen libtool perl-core zlib-devel htop git git-core curl sudo -y
   yum groupinstall "Development Tools" -y
+  curl -sL http://nsolid-rpm.nodesource.com/nsolid_setup_3.x | sudo bash -
+  sudo yum -y install nsolid-carbon nsolid-console
+  npm install npm@latest -g
+  npm install pm2@latest -g
 fi
 
 # Get Native IP Address
 IP=$(curl -4 -s ip.sb)
 
-# Switch to Temporary Directory
-mkdir /tmp/MTProxy
-cd /tmp/MTProxy
-
-# 下载 MTProxy 项目源码
-git clone https://github.com/TelegramMessenger/MTProxy
-
-# 进入项目编译并安装至 /usr/local/bin/
-pushd MTProxy
-make -j ${THREAD}
-cp objs/bin/mtproto-proxy /usr/local/bin/
+# Download MTProxy project source code
+if [[ ${OS} == CentOS ]];then
+	if [[ $CentOS_RHEL_version == 7 ]];then
+		git clone https://github.com/FreedomPrevails/JSMTProxy
+        if [ $? -eq 0 ]; then
+	        git clone git://github.com/FreedomPrevails/JSMTProxy
+	fi
+	fi
+fi
+cd JSMTProxy
 
 # Generate a Key
-curl -s https://core.telegram.org/getProxySecret -o /etc/proxy-secret
-curl -s https://core.telegram.org/getProxyConfig -o /etc/proxy-multi.conf
 echo "${uport}" > /etc/proxy-port
 head -c 16 /dev/urandom | xxd -ps > /etc/secret
 SECRET=$(cat /etc/secret)
-echo "Server IP： ${IP}"
-echo "Port：      ${uport}"
-echo "Secret：    ${SECRET}"
-echo "Register your Proxy with Bot @MTProxybot on Telegram"
-echo "Set received tag with @MTProxybot on Telegram and Past Command"
-read -p "Set Proxy Tag： " proxytag
-if [[ ${proxytag} = "" ]]; then
-   proxytag=""
-fi
-echo "${proxytag}" > /etc/proxy-tag
-TAG=$(cat /etc/proxy-tag)
-
-# Set Up the Systemd Service Management Configuration
-cat << EOF > /etc/systemd/system/MTProxy.service
-[Unit]
-Description=MTProxy
-After=network.target
-
-[Service]
-Type=simple
-WorkingDirectory=/usr/local/bin/
-ExecStart=/usr/local/bin/mtproto-proxy -u nobody -p 64335 -H ${uport} -S ${SECRET} -P ${TAG} --aes-pwd /etc/proxy-secret /etc/proxy-multi.conf
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
+sed -i -e 's/6969/${uport}/g' -e 's/b0cbcef5a486d9636472ac27f8e11a9d/${SECRET}/g' config.json
 
 # Setting Up a Firewall
 if [ ! -f "/etc/iptables.up.rules" ]; then 
@@ -159,12 +133,18 @@ fi
 
 
 # Set Boot From Start and Start MTProxy
-systemctl daemon-reload
-systemctl enable MTProxy.service
-systemctl restart MTProxy
-
-# Clean Installation Residue
-rm -rf /tmp/MTProxy >> /dev/null 
+if [[ ${OS} == CentOS ]];then
+	if [[ $CentOS_RHEL_version == 7 ]];then
+		pm2 start mtproxy.js -i max
+                pm2 save
+                pm2 startup centos
+        if [ $? -eq 0 ]; then
+	        pm2 start mtproxy.js -i max
+                pm2 save
+                pm2 startup
+	fi
+	fi
+fi
 
 # Display Service Information
 clear
@@ -172,7 +152,7 @@ echo "MTProxy Successful Installation！"
 echo "Server IP： ${IP}"
 echo "Port：      ${uport}"
 echo "Secret：    ${SECRET}"
-echo "TAG：       ${TAG}"
+echo "TAG：       Not Support NodeJs"
 echo ""
 echo -e "TG Proxy link：${green}https://t.me/proxy?server=${IP}&port=${uport}&secret=${SECRET}${plain}"
 echo ""
