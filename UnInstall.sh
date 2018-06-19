@@ -7,15 +7,13 @@ export PATH
 
 # Delete Files
 rm -rf /etc/proxy-secret
-rm -rf /etc/proxy-multi.conf
-rm -rf /etc/secret
 rm -rf /etc/proxy-port
-
-# Delete service files
-systemctl disable MTProxy.service
-systemctl stop MTProxy
-rm -rf /etc/systemd/system/MTProxy.service
-systemctl daemon-reload
+cd ~/JSMTProxy
+pm2 stop mtproxy.js -i max
+cd ~
+rm -rf MTProto-NodeJs-FastSetup-CentOS.sh
+rm -rf MTProto-NodeJs-FastSetup-UD.sh
+rm -rf JSMTProxy
 
 
 clear
