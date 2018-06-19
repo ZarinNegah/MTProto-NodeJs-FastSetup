@@ -10,14 +10,15 @@ export PATH
 [ $(id -u) != "0" ] && { echo "${CFAILURE}Error: You must be root to run this script${CEND}"; exit 1; }
 
 #Check OS
-if [ -n "$(grep 'Aliyun Linux release' /etc/issue)" -o -e /etc/redhat-release ]; then
-  OS=CentOS
-  [ -n "$(grep ' 7\.' /etc/redhat-release)" ] && CentOS_RHEL_version=7
-  [ -n "$(grep ' 6\.' /etc/redhat-release)" -o -n "$(grep 'Aliyun Linux release6 15' /etc/issue)" ] && CentOS_RHEL_version=6
-  [ -n "$(grep ' 5\.' /etc/redhat-release)" -o -n "$(grep 'Aliyun Linux release5' /etc/issue)" ] && CentOS_RHEL_version=5
-elif [ -n "$(grep 'Amazon Linux AMI release' /etc/issue)" -o -e /etc/system-release ]; then
-  OS=CentOS
-  CentOS_RHEL_version=6
+if [ -n "$(grep bian /etc/issue)" -o "$(lsb_release -is 2>/dev/null)" == 'Debian' ]; then
+  OS=Debian
+  [ ! -e "$(which lsb_release)" ] && { apt-get -y update; apt-get -y install lsb-release; clear; }
+  Debian_version=$(lsb_release -sr | awk -F. '{print $1}')
+elif [ -n "$(grep Ubuntu /etc/issue)" -o "$(lsb_release -is 2>/dev/null)" == 'Ubuntu' -o -n "$(grep 'Linux Mint' /etc/issue)" ]; then
+  OS=Ubuntu
+  [ ! -e "$(which lsb_release)" ] && { apt-get -y update; apt-get -y install lsb-release; clear; }
+  Ubuntu_version=$(lsb_release -sr | awk -F. '{print $1}')
+  [ -n "$(grep 'Linux Mint 18' /etc/issue)" ] && Ubuntu_version=16
 else
   echo "${CFAILURE}Does not support this OS, Please contact the author! ${CEND}"
   kill -9 $$
@@ -61,15 +62,12 @@ if [ -f "/etc/secret" ]; then
 fi
 
 # Firewalld
-if [[ ${OS} == CentOS ]]; then
-	if [[ $CentOS_RHEL_version == 7 ]]; then
-	        yum install firewalld -y
-                systemctl enable firewalld
-                systemctl start firewalld
-                systemctl status firewalld
-        elif [[ $CentOS_RHEL_version == 6 ]]; then
-	        yum install firewalld -y
-	fi
+if [ ${OS} == Ubuntu ] || [ ${OS} == Debian ];then
+  apt-get install firewalld -y
+  systemctl enable firewalld
+  systemctl start firewalld
+  rpm -q iptables
+  sudo iptables -L
 fi
 
 # Enter the Proxy Port
@@ -78,27 +76,21 @@ if [[ -z "${uport}" ]];then
 	uport="2082"
 fi
 
-if [ ${OS} == CentOS ]; then
-  yum update -y
-  yum install wget gcc gcc-c++ flex bison make bind bind-libs bind-utils epel-release iptables-services openssl openssl-devel firewalld perl quota libaio libcom_err-devel libcurl-devel tar diffutils nano dbus.x86_64 db4-devel cyrus-sasl-devel perl-ExtUtils-Embed.x86_64 cpan vim-common screen libtool perl-core zlib-devel htop git git-core curl sudo -y
-  yum groupinstall "Development Tools" -y
-  curl -sL http://nsolid-rpm.nodesource.com/nsolid_setup_3.x | sudo bash -
-  sudo yum -y install nsolid-carbon nsolid-console
-  npm install npm@latest -g
-  npm install pm2@latest -g
+if [ ${OS} == Ubuntu ] || [ ${OS} == Debian ];then
+	apt-get update -y
+  apt-get install build-essential libssl-dev zlib1g-dev curl git vim-common wget sudo firewalld nano -y
+	apt-get install xxd -y
+	curl -sL http://nsolid-deb.nodesource.com/nsolid_setup_3.x | sudo bash -
+	sudo apt-get -y install nsolid-carbon nsolid-console
+	npm install npm@latest -g
+        npm install pm2@latest -g
 fi
 
 # Get Native IP Address
 IP=$(curl -4 -s ip.sb)
 
 # Download MTProxy project source code
-if [[ ${OS} == CentOS ]]; then
-	if [[ $CentOS_RHEL_version == 7 ]]; then
-		git clone https://github.com/FreedomPrevails/JSMTProxy
-        elif [[ $CentOS_RHEL_version == 6 ]]; then
-	        git clone git://github.com/FreedomPrevails/JSMTProxy
-	fi
-fi
+git clone https://github.com/FreedomPrevails/JSMTProxy
 cd JSMTProxy
 
 # Generate a Key
@@ -114,42 +106,20 @@ if [ ! -f "/etc/iptables.up.rules" ]; then
     iptables-save > /etc/iptables.up.rules
 fi
 
-if [[ ${OS} == CentOS ]]; then
-	if [[ $CentOS_RHEL_version == 7 ]]; then
-		
-        if [ $? -eq 0 ]; then
-	        firewall-cmd --permanent --add-port=${uport}/tcp
-		firewall-cmd --permanent --add-port=${uport}/udp
-	        firewall-cmd --reload
-	else
-		iptables-restore < /etc/iptables.up.rules
-		iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport $uport -j ACCEPT
-    		iptables -I INPUT -m state --state NEW -m udp -p udp --dport $uport -j ACCEPT
-		iptables-save > /etc/iptables.up.rules
-		fi
-	else
-		iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport $uport -j ACCEPT
-    	        iptables -I INPUT -m state --state NEW -m udp -p udp --dport $uport -j ACCEPT
-		/etc/init.d/iptables save
-		/etc/init.d/iptables restart
-	fi
+if [[ ${OS} =~ ^Ubuntu$|^Debian$ ]];then
+	iptables-restore < /etc/iptables.up.rules
+	clear
+	iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport $uport -j ACCEPT
+	iptables -I INPUT -m state --state NEW -m udp -p udp --dport $uport -j ACCEPT
+	iptables-save > /etc/iptables.up.rules
 fi
 
 
 # Set Boot From Start and Start MTProxy
-if [[ ${OS} == CentOS ]]; then
-	if [[ $CentOS_RHEL_version == 7 ]]; then
-	        cd ~/JSMTProxy
-		pm2 start mtproxy.js -i max
-                pm2 save
-                pm2 startup centos
-        elif [[ $CentOS_RHEL_version == 6 ]]; then
-	        cd ~/JSMTProxy
-	        pm2 start mtproxy.js -i max
-                pm2 save
-                pm2 startup
-	fi
-fi
+cd ~/JSMTProxy
+pm2 start mtproxy.js -i max
+pm2 save
+pm2 startup
 
 # Display Service Information
 clear
