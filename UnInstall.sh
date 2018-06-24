@@ -8,6 +8,7 @@ export PATH
 # Delete Files
 rm -rf /etc/proxy-secret
 rm -rf /etc/proxy-port
+rm -rf /etc/secret
 cd ~/JSMTProxy
 pm2 stop mtproxy.js -i max
 cd ~
